@@ -40,62 +40,25 @@ app.get('/todos', function(req, res) {
 app.get('/todos/:id', function(req, res) {
 	var todoId = parseInt(req.params.id);
 
-	var matchedTodo = _.findWhere(todos, {
-		id: todoId
+	db.todo.findById(todoId).then(function(todo) {
+		if (!!todo) {
+			res.json(todo.toJSON());
+		} else {
+			res.status(404).send();
+		}
+	}, function(e) {
+		res.status(500).send();
 	});
-
-	if (matchedTodo) {
-		res.json(matchedTodo);
-	} else {
-		res.status(404).send();
-	}
 });
 
 app.post('/todos', function(req, res) {
 	var body = _.pick(req.body, 'description', 'completed');
 
-	db.todo.create(body).then(function (todo) {
+	db.todo.create(body).then(function(todo) {
 		res.json(todo.toJSON());
-	}, function (e) {
+	}, function(e) {
 		res.status(400).json(e);
 	});
-
-	// Todo.create({
-	// 	description: "Take out the trash"
-	// }).then(function (todo) {
-	// 	return Todo.create({
-	// 		description: "Clean the office"
-	// 	});
-	// }).then(function() {
-	// 	//return Todo.findById(1)
-	// 	return Todo.findAll({
-	// 		where: {
-	// 			description: {
-	// 				$like: '%Office%'
-	// 			}
-	// 		}
-	// 	});
-	// }).then(function(todos) {
-	// 	if (todos) {
-	// 		todos.forEach(function (todo) {
-	// 			console.log(todo.toJSON());
-	// 		});
-	// 	} else {
-	// 		console.log("No todo items");
-	// 	}
-	// }).catch(function (e) {
-	// 	console.log(e);
-	// });
-
-
-	// if (!_.isBoolean(body.completed) || !_.isString(body.description) || body.description.trim().length === 0) {
-	// 	return res.status(400).send();
-	// } else {
-	// 	body.description = body.description.trim();
-	// 	body.id = todoNextId++;
-	// 	todos.push(body);
-	// 	res.json(body);
-	// }
 });
 
 app.delete('/todos/:id', function(req, res) {
