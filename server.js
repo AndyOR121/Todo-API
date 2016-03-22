@@ -70,7 +70,7 @@ app.delete('/todos/:id', function(req, res) {
 		where: {
 			id: todoId
 		}
-	}).then(function (rowsDeleted) {
+	}).then(function(rowsDeleted) {
 		if (rowsDeleted === 0) {
 			res.status(404).json({
 				error: 'No todo with chosen ID.'
@@ -78,7 +78,7 @@ app.delete('/todos/:id', function(req, res) {
 		} else {
 			res.status(204).send();
 		}
-	}, function (e) {
+	}, function(e) {
 		res.status(500).send();
 	});
 });
@@ -98,15 +98,25 @@ app.put('/todos/:id', function(req, res) {
 
 	db.todo.findById(todoId).then(function(todo) {
 		if (todo) {
-			return todo.update(attributes)
+			todo.update(attributes).then(function(todo) {
+				res.json(todo.toJSON());
+			}, function(e) {
+				res.status(400).json(e);
+			});
 		} else {
 			res.status(404).send();
 		}
 	}, function(e) {
 		res.status(500).send();
-	}).then(function (todo) {
-		res.json(todo.toJSON());
-	}, function (e) {
+	});
+});
+
+app.post('/users', function(req, res) {
+	var body = _.pick(req.body, 'email', 'password');
+
+	db.user.create(body).then(function(user) {
+		res.json(user.toJSON());
+	}, function(e) {
 		res.status(400).json(e);
 	});
 });
